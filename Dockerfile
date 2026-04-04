@@ -38,7 +38,7 @@ RUN node -e " \
   let files = []; \
   try { \
     files = execSync( \
-      'find /usr/local/lib/node_modules/openclaw /usr/local/lib/node_modules/@aiwerk -name \"*.js\" 2>/dev/null', \
+      'find /usr/local/lib/node_modules/openclaw /usr/local/lib/node_modules/@aiwerk /root/.openclaw \\( -name \"*.js\" -o -name \"*.mjs\" -o -name \"*.cjs\" \\) 2>/dev/null', \
       { maxBuffer: 20 * 1024 * 1024 } \
     ).toString().trim().split('\n').filter(Boolean); \
   } catch(e) {} \
