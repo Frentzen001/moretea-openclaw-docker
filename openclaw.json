@@ -30,7 +30,6 @@
   "tools": {
     "allow": [
       "process",
-      "mcp_bridge_update",
       "moretea_robot_health",
       "moretea_robot_express_emotion",
       "moretea_robot_capture_image",

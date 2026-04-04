@@ -1,7 +1,7 @@
 # MoreTea Bridge Runtime Handoff
 
-**Date:** 2026-03-30  
-**Status:** Bridge-first runtime aligned with the live host setup
+**Date:** 2026-04-04  
+**Status:** Bridge-first runtime — mimeType patch applied for camera vision
 
 ## Summary
 
@@ -13,6 +13,20 @@ The canonical runtime flow is:
 2. Start the SSH tunnel on the OpenClaw host so `127.0.0.1:8765` points to the robot MCP server.
 3. Start OpenClaw in this container. The `openclaw-mcp-bridge` plugin connects directly to `http://127.0.0.1:8765/mcp`.
 4. The bridge registers prefixed tools as `moretea_robot_*`.
+
+### mimeType patch (2026-04-04)
+
+OpenClaw's `contentToOpenAIParts()` function builds OpenAI image data URLs as
+`data:<mimeType>;base64,<data>` but fails to read the `mimeType` field from MCP
+`ImageContent`, producing `data:undefined;base64,...` which OpenAI rejects with
+HTTP 400.
+
+The Dockerfile runs a Node.js patch after plugin installation that rewrites every
+`.mimeType` property access in both the `openclaw` and `@aiwerk` npm packages to
+`(.mimeType||.mime_type||"image/jpeg")`, covering both the core package and the
+bridge plugin regardless of which code path is active.
+
+**Rebuild required** after this change: `docker compose build --no-cache && docker compose up -d`
 
 The local `plugin/` directory is retained only as legacy/reference code. It is not part of the default runtime or build path.
 
@@ -34,7 +48,7 @@ The container runs with `network_mode: host`, so `127.0.0.1:8765` inside the con
 
 ### mcporter
 
-`mcporter.json` is retained only for manual diagnostics and ad-hoc debugging. It is not the primary runtime path for the OpenClaw agent in this repo.
+Removed. mcporter config, Dockerfile steps, and entrypoint logic have all been stripped out. The bridge is the only runtime path.
 
 ## Expected Tool Surface
 
