@@ -1,0 +1,21 @@
+{
+  "name": "rosclaw",
+  "version": "2.0.0",
+  "description": "RosClaw OpenClaw plugin — ROS2 Humble bridge",
+  "type": "module",
+  "main": "dist/index.js",
+  "openclaw": {
+    "extensions": ["./dist/adapter.js"]
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.4.0",
+    "openclaw": "latest"
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.13"
+  },
+  "auth": {
+    "profiles": {
+      "openai:default": {
+        "provider": "openai",
+        "mode": "api_key"
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "openai": {
+        "baseUrl": "https://api.openai.com/v1",
+        "models": [
+          {
+            "id": "gpt-4.1-mini",
+            "name": "gpt-4.1-mini",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "contextWindow": 1000000
+          }
+        ]
+      }
+    }
+  },
+  "tools": {
+    "allow": [
+      "process",
+      "mcp_bridge_update",
+      "moretea_robot_health",
+      "moretea_robot_express_emotion",
+      "moretea_robot_capture_image",
+      "moretea_robot_get_recognized_faces",
+      "moretea_robot_register_face",
+      "moretea_robot_get_navigation_status",
+      "moretea_robot_list_tour_stops",
+      "moretea_robot_start_navigation_to_stop",
+      "moretea_robot_wait_for_navigation_action",
+      "moretea_robot_get_navigation_action_status",
+      "moretea_robot_cancel_navigation",
+      "moretea_robot_move",
+      "moretea_robot_move_distance",
+      "moretea_robot_stop_motion",
+      "moretea_robot_get_odometry",
+      "moretea_robot_get_battery",
+      "moretea_robot_get_laser_scan"
+    ],
+    "exec": {
+      "ask": "off"
+    },
+    "web": {
+      "search": {
+        "enabled": false
+      },
+      "fetch": {
+        "enabled": false
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "openai/gpt-4.1-mini"
+      },
+      "models": {
+        "openai/gpt-4.1-mini": {
+          "params": {
+            "temperature": 0.3,
+            "max_output_tokens": 500
+          }
+        }
+      },
+      "workspace": "/root/.openclaw/workspace",
+      "contextTokens": 200000,
+      "compaction": {
+        "mode": "default",
+        "timeoutSeconds": 900,
+        "reserveTokensFloor": 2048,
+        "postCompactionSections": [],
+        "memoryFlush": {
+          "enabled": false
+        }
+      },
+      "contextPruning": {
+        "mode": "cache-ttl",
+        "ttl": "15m",
+        "keepLastAssistants": 2
+      },
+      "heartbeat": {
+        "every": "5m",
+        "session": "main",
+        "target": "none",
+        "isolatedSession": false,
+        "lightContext": false,
+        "suppressToolErrorWarnings": true,
+        "prompt": "Read /root/.openclaw/workspace/HEARTBEAT.md and follow it exactly. Do not respond to visitors. End with HEARTBEAT_OK."
+      },
+      "memorySearch": {
+        "enabled": true,
+        "extraPaths": [
+          "/root/.openclaw/workspace",
+          "/root/robot"
+        ],
+        "provider": "ollama",
+        "remote": {
+          "baseUrl": "http://127.0.0.1:11434/v1"
+        },
+        "sync": {
+          "onSessionStart": true,
+          "watch": true
+        }
+      }
+    }
+  },
+  "gateway": {
+    "port": 18790,
+    "mode": "local",
+    "bind": "lan",
+    "http": {
+      "endpoints": {
+        "chatCompletions": {
+          "enabled": true
+        }
+      }
+    },
+    "auth": {
+      "mode": "token",
+      "token": "rosclaw-isolated-docker-test-2026"
+    }
+  },
+  "plugins": {
+    "allow": ["openclaw-mcp-bridge"],
+    "entries": {
+      "openclaw-mcp-bridge": {
+        "enabled": true,
+        "config": {
+          "mode": "direct",
+          "toolPrefix": true,
+          "servers": {
+            "moretea-robot": {
+              "transport": "streamable-http",
+              "url": "http://127.0.0.1:8765/mcp",
+              "description": "MoreTea robot MCP endpoint tunneled from the host"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "id": "rosclaw",
+  "name": "rosclaw",
+  "version": "2.0.0",
+  "entryPoint": "dist/adapter.js",
+  "configSchema": {
+    "rosbridgeUrl": {
+      "type": "string",
+      "default": "ws://localhost:9090",
+      "description": "WebSocket URL of the rosbridge server on your robot"
+    },
+    "cmdVelTopic": {
+      "type": "string",
+      "default": "/cmd_vel",
+      "description": "ROS2 topic for velocity commands"
+    },
+    "angularSign": {
+      "type": "number",
+      "default": 1,
+      "description": "Multiplier applied to commanded angular_z. Set to -1 if left/right are flipped on this robot."
+    },
+    "odomTopic": {
+      "type": "string",
+      "default": "/odom",
+      "description": "ROS2 topic for odometry feedback"
+    },
+    "imageTopic": {
+      "type": "string",
+      "default": "/camera/color/image_raw/compressed",
+      "description": "ROS2 topic for camera image"
+    },
+    "faceDirectionYTopic": {
+      "type": "string",
+      "default": "/face_direction_y",
+      "description": "ROS2 topic for face or neck vertical direction control"
+    },
+    "faceDirectionYDownValue": {
+      "type": "string",
+      "default": "+",
+      "description": "Value published to faceDirectionYTopic when the operator says look down"
+    },
+    "faceDirectionYUpValue": {
+      "type": "string",
+      "default": "-",
+      "description": "Value published to faceDirectionYTopic when the operator says look up"
+    },
+    "faceDirectionYCenterValue": {
+      "type": "string",
+      "default": "0",
+      "description": "Value published to faceDirectionYTopic when the operator says look straight or center"
+    },
+    "faceDirectionYRepeatHz": {
+      "type": "number",
+      "default": 2,
+      "description": "Repeat rate in Hz for /face_direction_y bursts"
+    },
+    "faceDirectionYDurationMs": {
+      "type": "number",
+      "default": 3500,
+      "description": "Burst duration in milliseconds for /face_direction_y publishes"
+    },
+    "connectionTimeoutMs": {
+      "type": "number",
+      "default": 5000,
+      "description": "rosbridge connection timeout in milliseconds"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Contains real API keys — never commit
+auth-profiles.json
+
+# Dependencies — install on target machine
+plugin/node_modules/

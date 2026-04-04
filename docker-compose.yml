@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  rosclaw-isolated:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rosclaw-isolated-test
+    # Host networking so the container can reach:
+    #   - Ollama at 127.0.0.1:11434 (local LLM)
+    #   - The SSH-tunneled MoreTea MCP endpoint at 127.0.0.1:8765/mcp
+    #   - Jetson rosbridge at 192.168.50.126:9090
+    # NOTE: with host networking, port 18790 is directly on the host
+    network_mode: host
+    environment:
+      - ROBOT_HOST=jetson@192.168.50.126
+    volumes:
+      # Persist agent workspace between restarts
+      - rosclaw-isolated-data:/root/.openclaw/workspace
+      # Persist gateway identity and paired device state so browser/device tokens
+      # do not drift every time the container is recreated.
+      - rosclaw-isolated-identity:/root/.openclaw/identity
+      - rosclaw-isolated-devices:/root/.openclaw/devices
+    restart: unless-stopped
+
+volumes:
+  # Named volume — isolated from all other Docker volumes on this PC
+  rosclaw-isolated-data:
+    name: rosclaw-isolated-data
+  rosclaw-isolated-identity:
+    name: rosclaw-isolated-identity
+  rosclaw-isolated-devices:
+    name: rosclaw-isolated-devices
