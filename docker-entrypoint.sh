@@ -4,7 +4,7 @@ set -euo pipefail
 mkdir -p /root/.openclaw/workspace /root/.mcporter
 
 if [ ! -f /root/.openclaw/workspace/mcporter.json ]; then
-  cp /opt/rosclaw/mcporter.json /root/.openclaw/workspace/mcporter.json
+  cp /opt/moretea-openclaw/mcporter.json /root/.openclaw/workspace/mcporter.json
 fi
 
 if [ ! -L /root/.mcporter/mcporter.json ] && [ ! -f /root/.mcporter/mcporter.json ]; then

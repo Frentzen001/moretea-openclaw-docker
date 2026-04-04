@@ -92,7 +92,7 @@ docker compose up --build
 Then verify bridge startup from inside the container:
 
 ```bash
-docker exec rosclaw-isolated-test openclaw sandbox explain --json
+docker exec moretea-openclaw openclaw sandbox explain --json
 ```
 
 Healthy behavior:
@@ -106,7 +106,7 @@ Healthy behavior:
 Use a direct agent prompt after the tunnel is up:
 
 ```bash
-docker exec rosclaw-isolated-test openclaw agent --local --session-id main --message "Check if the robot is ready" --json
+docker exec moretea-openclaw openclaw agent --local --session-id main --message "Check if the robot is ready" --json
 ```
 
 Expected behavior:

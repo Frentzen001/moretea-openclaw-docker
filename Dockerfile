@@ -40,7 +40,7 @@ COPY HEARTBEAT.md /root/.openclaw/workspace/HEARTBEAT.md
 # Keep a template mcporter config outside the mounted workspace volume.
 # It is retained only as an optional diagnostic artifact; OpenClaw runtime
 # access to the robot comes from the MCP bridge configured in openclaw.json.
-COPY mcporter.json /opt/rosclaw/mcporter.json
+COPY mcporter.json /opt/moretea-openclaw/mcporter.json
 
 # Knowledge base files go into ~/robot/ where SKILL.md tells the LLM to read from
 COPY skills/memory.md /root/robot/memory.md
