@@ -38,7 +38,7 @@ RUN node -e " \
   let files = []; \
   try { \
     files = execSync( \
-      'find /usr/local/lib/node_modules/openclaw /usr/local/lib/node_modules/@aiwerk /root/.openclaw \\( -name \"*.js\" -o -name \"*.mjs\" -o -name \"*.cjs\" \\) 2>/dev/null', \
+      'find /usr/lib/node_modules/openclaw /usr/lib/node_modules/@aiwerk /root/.openclaw \\( -name \"*.js\" -o -name \"*.mjs\" -o -name \"*.cjs\" \\) 2>/dev/null', \
       { maxBuffer: 20 * 1024 * 1024 } \
     ).toString().trim().split('\n').filter(Boolean); \
   } catch(e) {} \
@@ -59,11 +59,15 @@ RUN node -e " \
 RUN mkdir -p /root/.openclaw/skills/community-robot
 COPY skills/SKILL.md /root/.openclaw/skills/community-robot/SKILL.md
 
-# Override SOUL.md with robot identity so it's always active regardless of skill detection
-COPY workspace-soul.md /root/.openclaw/workspace/SOUL.md
-
-# Heartbeat instructions for background memory consolidation
-COPY HEARTBEAT.md /root/.openclaw/workspace/HEARTBEAT.md
+# Store canonical config and initial memory seeds at /root/config/ (outside the workspace
+# volume). The entrypoint copies SOUL.md and HEARTBEAT.md to the workspace on every start
+# so that image rebuilds take effect immediately, and seeds corrections.md / experience.md
+# on first run only so that accumulated memories are preserved across container recreations.
+RUN mkdir -p /root/config
+COPY workspace-soul.md /root/config/SOUL.md
+COPY HEARTBEAT.md /root/config/HEARTBEAT.md
+COPY skills/experience.md /root/config/experience.md
+RUN touch /root/config/corrections.md
 
 # Knowledge base files go into ~/robot/ where SKILL.md tells the LLM to read from
 COPY skills/memory.md /root/robot/memory.md
@@ -73,8 +77,7 @@ COPY skills/events.md /root/robot/events.md
 COPY skills/facilities.md /root/robot/facilities.md
 COPY skills/projects.md /root/robot/projects.md
 COPY skills/programmes.md /root/robot/programmes.md
-RUN touch /root/robot/corrections.md /root/robot/log.md
-COPY skills/experience.md /root/robot/experience.md
+RUN touch /root/robot/log.md
 
 # Install an entrypoint that seeds the workspace volume with the optional
 # mcporter config if the mounted volume does not already contain one.
