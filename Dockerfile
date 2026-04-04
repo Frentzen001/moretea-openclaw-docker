@@ -27,12 +27,15 @@ COPY auth-profiles.json /root/.openclaw/agents/main/agent/auth-profiles.json
 # Install the MCP bridge used by the direct robot runtime
 RUN openclaw plugins install @aiwerk/openclaw-mcp-bridge
 
-# Surgical fix: openai-responses-shared.js (from @mariozechner/pi-ai) builds OpenAI
-# image URLs as data:${item.mimeType};base64,... but mimeType is undefined when MCP
-# ImageContent arrives, producing data:undefined;base64,... which OpenAI rejects (HTTP 400).
-# Patch the two known lines to fall back to "image/jpeg".
+# Surgical fix for openai-responses-shared.js (@mariozechner/pi-ai):
+# Bug 1 — mimeType is undefined when MCP ImageContent arrives → "image/jpeg" fallback
+# Bug 2 — item.data may be a Buffer (JS MCP SDK decodes base64 to binary on parse)
+#          so ${item.data} in a template literal produces garbage; re-encode to base64.
 RUN sed -i \
-    's/${item\.mimeType}/${item.mimeType || "image\/jpeg"}/g;s/${block\.mimeType}/${block.mimeType || "image\/jpeg"}/g' \
+    -e 's/${item\.mimeType}/${item.mimeType || "image\/jpeg"}/g' \
+    -e 's/${block\.mimeType}/${block.mimeType || "image\/jpeg"}/g' \
+    -e 's/${item\.data}/${typeof item.data==="string"?item.data:Buffer.from(item.data).toString("base64")}/g' \
+    -e 's/${block\.data}/${typeof block.data==="string"?block.data:Buffer.from(block.data).toString("base64")}/g' \
     /usr/lib/node_modules/openclaw/node_modules/@mariozechner/pi-ai/dist/providers/openai-responses-shared.js
 
 # SKILL.md goes into openclaw skills registry so it gets discovered and loaded
