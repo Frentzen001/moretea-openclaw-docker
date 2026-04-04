@@ -28,14 +28,16 @@ COPY auth-profiles.json /root/.openclaw/agents/main/agent/auth-profiles.json
 RUN openclaw plugins install @aiwerk/openclaw-mcp-bridge
 
 # Surgical fix for openai-responses-shared.js (@mariozechner/pi-ai):
-# Bug 1 — mimeType is undefined when MCP ImageContent arrives → "image/jpeg" fallback
-# Bug 2 — item.data may be a Buffer (JS MCP SDK decodes base64 to binary on parse)
-#          so ${item.data} in a template literal produces garbage; re-encode to base64.
+# The Anthropic SDK mcpContent() helper wraps MCP ImageContent:
+#   { type:"image", data:"<b64>", mimeType:"image/jpeg" }
+#   → { type:"image", source:{ type:"base64", data:"<b64>", media_type:"image/jpeg" } }
+# So block.data and block.mimeType are undefined; the real values are at
+# block.source.data and block.source.media_type. Patch to read source first.
 RUN sed -i \
-    -e 's/${item\.mimeType}/${item.mimeType || "image\/jpeg"}/g' \
-    -e 's/${block\.mimeType}/${block.mimeType || "image\/jpeg"}/g' \
-    -e 's/${item\.data}/${typeof item.data==="string"?item.data:Buffer.from(item.data).toString("base64")}/g' \
-    -e 's/${block\.data}/${typeof block.data==="string"?block.data:Buffer.from(block.data).toString("base64")}/g' \
+    -e 's/${item\.mimeType || "image\/jpeg"}/${item.source?.media_type || item.mimeType || "image\/jpeg"}/g' \
+    -e 's/${block\.mimeType || "image\/jpeg"}/${block.source?.media_type || block.mimeType || "image\/jpeg"}/g' \
+    -e 's/typeof item\.data==="string"?item\.data:Buffer\.from(item\.data)\.toString("base64")/typeof (item.source?.data||item.data)==="string"?(item.source?.data||item.data):Buffer.from(item.source?.data||item.data).toString("base64")/g' \
+    -e 's/typeof block\.data==="string"?block\.data:Buffer\.from(block\.data)\.toString("base64")/typeof (block.source?.data||block.data)==="string"?(block.source?.data||block.data):Buffer.from(block.source?.data||block.data).toString("base64")/g' \
     /usr/lib/node_modules/openclaw/node_modules/@mariozechner/pi-ai/dist/providers/openai-responses-shared.js
 
 # SKILL.md goes into openclaw skills registry so it gets discovered and loaded
