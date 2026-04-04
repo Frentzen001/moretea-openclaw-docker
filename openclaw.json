@@ -29,6 +29,8 @@
   },
   "tools": {
     "allow": [
+      "read",
+      "write",
       "process",
       "moretea_robot_health",
       "moretea_robot_express_emotion",
