@@ -12,8 +12,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install OpenClaw and mcporter globally
-RUN npm install -g openclaw mcporter
+# Install OpenClaw globally
+RUN npm install -g openclaw
 
 # Set up OpenClaw config directories
 RUN mkdir -p /root/.openclaw/workspace /root/.openclaw/agents/main/agent /root/robot
@@ -27,9 +27,10 @@ COPY auth-profiles.json /root/.openclaw/agents/main/agent/auth-profiles.json
 # Install the MCP bridge used by the direct robot runtime
 RUN openclaw plugins install @aiwerk/openclaw-mcp-bridge
 
-# Patch openai-responses-shared.js to handle the Anthropic SDK mcpContent() wrapping.
-# (sed failed because the file uses ${item.mimeType} with no fallback — the sed patterns
-#  never matched. This Node.js script uses regex so it catches both forms.)
+# Patch openai-responses-shared.js to handle image content from all sources:
+# - Anthropic SDK wrapped: { source: { type:"base64", data:"...", media_type:"..." } }
+# - Raw MCP ImageContent:  { data:"...", mimeType:"..." }
+# - mcp-bridge stripped:   { text: JSON.stringify(originalItem) }  ← root cause of the original bug
 COPY patch-openai-responses.js /tmp/patch-openai-responses.js
 RUN node /tmp/patch-openai-responses.js && rm /tmp/patch-openai-responses.js
 
@@ -57,8 +58,7 @@ COPY skills/projects.md /root/robot/projects.md
 COPY skills/programmes.md /root/robot/programmes.md
 RUN touch /root/robot/log.md
 
-# Install an entrypoint that seeds the workspace volume with the optional
-# mcporter config if the mounted volume does not already contain one.
+# Install an entrypoint that seeds the workspace volume on first start.
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
