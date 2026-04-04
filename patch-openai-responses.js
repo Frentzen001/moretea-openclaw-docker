@@ -1,14 +1,14 @@
 /**
  * Build-time patch for openai-responses-shared.js (@mariozechner/pi-ai).
  *
- * Root cause: the Anthropic SDK mcpContent() helper wraps MCP ImageContent from
- *   { type:"image", data:"<b64>", mimeType:"image/jpeg" }
- * into
- *   { type:"image", source:{ type:"base64", data:"<b64>", media_type:"image/jpeg" } }
+ * Approach: inject a __mcpImageUrl() helper that handles every known layout of
+ * a wrapped MCP ImageContent block, then replace the image_url template literals
+ * with calls to that helper. This avoids brittle template-expression substitution.
  *
- * So item/block.data and item/block.mimeType are undefined at the call sites in
- * openai-responses-shared.js; the actual values live at .source.data / .source.media_type.
- * This script patches those two lines so they fall back to the nested source object first.
+ * Known layouts (depending on SDK version and code path):
+ *   A. Anthropic SDK wrapped:  { type:"image", source:{type:"base64", data:"...", media_type:"..."} }
+ *   B. Raw MCP:                { type:"image", data:"...", mimeType:"..." }
+ *   C. URL form:               { type:"image", source:{type:"url", url:"data:image/jpeg;base64,..."} }
  */
 
 'use strict';
@@ -18,42 +18,72 @@ const TARGET =
   '/usr/lib/node_modules/openclaw/node_modules/@mariozechner/pi-ai/dist/providers/openai-responses-shared.js';
 
 let code = fs.readFileSync(TARGET, 'utf8');
-const before = code;
 
-// 1. Fix mimeType references (handles both with and without || "image/jpeg" fallback)
+// ── 1. Prepend the helper function ──────────────────────────────────────────
+const HELPER = `
+function __mcpImageUrl(blk) {
+  var src = blk && blk.source;
+  // Layout C: source already contains a complete data URL
+  if (src && src.url) return src.url;
+  // Pick MIME type from wherever it lives
+  var mime = (src && src.media_type) || blk.mimeType || 'image/jpeg';
+  // Pick raw data from wherever it lives
+  var raw = (src && src.data !== undefined) ? src.data : blk.data;
+  if (raw == null) {
+    // Log the full block so we can see the real structure in docker logs
+    console.error('[MCP-IMAGE] image data missing. block keys:', Object.keys(blk || {}),
+      '| source:', JSON.stringify(src || null));
+    return 'data:' + mime + ';base64,MISSING_IMAGE_DATA';
+  }
+  var b64 = typeof raw === 'string' ? raw : Buffer.from(raw).toString('base64');
+  return 'data:' + mime + ';base64,' + b64;
+}
+`;
+
+code = HELPER + code;
+
+// ── 2. Replace image_url template literals ───────────────────────────────────
+// Matches:  image_url: `data:${item. ... ` (anything up to the closing backtick)
+const itemBefore = code;
 code = code.replace(
-  /\$\{item\.mimeType(\s*\|\|\s*"image\/jpeg")?\}/g,
-  '${item.source?.media_type || item.mimeType || "image/jpeg"}'
-);
-code = code.replace(
-  /\$\{block\.mimeType(\s*\|\|\s*"image\/jpeg")?\}/g,
-  '${block.source?.media_type || block.mimeType || "image/jpeg"}'
+  /image_url:\s*`data:\$\{item\.[^`]*`/g,
+  'image_url: __mcpImageUrl(item)'
 );
 
-// 2. Fix data references — simple ${x.data} form
+const blockBefore = code;
 code = code.replace(
-  /\$\{item\.data\}/g,
-  '${typeof (item.source?.data||item.data)==="string"?(item.source?.data||item.data):Buffer.from(item.source?.data||item.data).toString("base64")}'
-);
-code = code.replace(
-  /\$\{block\.data\}/g,
-  '${typeof (block.source?.data||block.data)==="string"?(block.source?.data||block.data):Buffer.from(block.source?.data||block.data).toString("base64")}'
+  /image_url:\s*`data:\$\{block\.[^`]*`/g,
+  'image_url: __mcpImageUrl(block)'
 );
 
-// 3. Fix data references — typeof guard form (in case a prior partial patch applied)
-code = code.replace(
-  /typeof item\.data==="string"\?item\.data:Buffer\.from\(item\.data\)\.toString\("base64"\)/g,
-  'typeof (item.source?.data||item.data)==="string"?(item.source?.data||item.data):Buffer.from(item.source?.data||item.data).toString("base64")'
-);
-code = code.replace(
-  /typeof block\.data==="string"\?block\.data:Buffer\.from\(block\.data\)\.toString\("base64"\)/g,
-  'typeof (block.source?.data||block.data)==="string"?(block.source?.data||block.data):Buffer.from(block.source?.data||block.data).toString("base64")'
-);
+// ── 3. Verify at least one substitution happened ─────────────────────────────
+const itemChanged = (code !== itemBefore);
+const blockChanged = (code !== blockBefore);
 
-if (code === before) {
-  console.error('ERROR: No patterns matched — file may have changed. Aborting.');
-  process.exit(1);
+if (!itemChanged && !blockChanged) {
+  // Fallback: the template literal forms may have been partially patched already.
+  // Try matching more broadly.
+  const broadBefore = code;
+  code = code.replace(
+    /image_url:\s*`[^`]*\$\{(?:item|block)[^`]*`/g,
+    (match) => {
+      const who = match.includes('${item') ? 'item' : 'block';
+      return 'image_url: __mcpImageUrl(' + who + ')';
+    }
+  );
+  if (code === broadBefore) {
+    console.error('ERROR: No image_url patterns matched — file structure may have changed.');
+    console.error('Searching for "image_url" occurrences:');
+    code.split('\n').forEach((line, i) => {
+      if (line.includes('image_url')) console.error('  line ' + (i+1) + ': ' + line.trim());
+    });
+    process.exit(1);
+  }
+  console.log('openai-responses-shared.js patched OK (broad fallback pattern used)');
+} else {
+  console.log('openai-responses-shared.js patched OK'
+    + (itemChanged ? ' [item path]' : '')
+    + (blockChanged ? ' [block path]' : ''));
 }
 
 fs.writeFileSync(TARGET, code);
-console.log('openai-responses-shared.js patched OK');
