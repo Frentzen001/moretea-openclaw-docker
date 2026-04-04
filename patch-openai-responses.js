@@ -9,6 +9,9 @@
  *   A. Anthropic SDK wrapped:  { type:"image", source:{type:"base64", data:"...", media_type:"..."} }
  *   B. Raw MCP:                { type:"image", data:"...", mimeType:"..." }
  *   C. URL form:               { type:"image", source:{type:"url", url:"data:image/jpeg;base64,..."} }
+ *   D. mcp-bridge stripped:    { type:"image", text:"{\"type\":\"image\",\"data\":\"...\",\"mimeType\":\"...\"}" }
+ *      @aiwerk/openclaw-mcp-bridge converts ALL content items to {type, text} only, putting the
+ *      original object as JSON.stringify() into `text`. We parse it back to recover the image data.
  */
 
 'use strict';
@@ -27,8 +30,20 @@ function __mcpImageUrl(blk) {
   if (src && src.url) return src.url;
   // Pick MIME type from wherever it lives
   var mime = (src && src.media_type) || blk.mimeType || 'image/jpeg';
-  // Pick raw data from wherever it lives
+  // Pick raw data from wherever it lives (layouts A and B)
   var raw = (src && src.data !== undefined) ? src.data : blk.data;
+  // Layout D: @aiwerk/openclaw-mcp-bridge strips all fields except {type, text} and puts
+  // JSON.stringify(originalItem) into blk.text — parse it back to recover the image data.
+  if (raw == null && typeof blk.text === 'string') {
+    try {
+      var parsed = JSON.parse(blk.text);
+      var psrc = parsed.source;
+      raw = (psrc && psrc.data !== undefined) ? psrc.data : parsed.data;
+      if (!mime || mime === 'image/jpeg') {
+        mime = (psrc && psrc.media_type) || parsed.mimeType || 'image/jpeg';
+      }
+    } catch (e) {}
+  }
   if (raw == null) {
     // Log the full block so we can see the real structure in docker logs
     console.error('[MCP-IMAGE] image data missing. block keys:', Object.keys(blk || {}),
