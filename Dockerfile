@@ -27,33 +27,13 @@ COPY auth-profiles.json /root/.openclaw/agents/main/agent/auth-profiles.json
 # Install the MCP bridge used by the direct robot runtime
 RUN openclaw plugins install @aiwerk/openclaw-mcp-bridge
 
-# Patch OpenClaw MCP image handling: whichever component converts MCP ImageContent to
-# an OpenAI data URL builds it as data:${mimeType};base64,${data}. If mimeType is read
-# from the wrong field name (mime_type vs mimeType) it produces 'data:undefined;...'
-# which OpenAI rejects. Patch every .mimeType access in openclaw and its MCP packages
-# to fall back to mime_type and then image/jpeg.
-RUN node -e " \
-  const { execSync } = require('child_process'); \
-  const fs = require('fs'); \
-  let files = []; \
-  try { \
-    files = execSync( \
-      'find /usr/lib/node_modules/openclaw /usr/lib/node_modules/@aiwerk /root/.openclaw \\( -name \"*.js\" -o -name \"*.mjs\" -o -name \"*.cjs\" \\) 2>/dev/null', \
-      { maxBuffer: 20 * 1024 * 1024 } \
-    ).toString().trim().split('\n').filter(Boolean); \
-  } catch(e) {} \
-  let n = 0; \
-  for (const f of files) { \
-    const orig = fs.readFileSync(f, 'utf8'); \
-    if (!orig.includes('mimeType')) continue; \
-    const patched = orig.replace( \
-      /([a-zA-Z_\$][a-zA-Z0-9_\$]*)\.mimeType\b/g, \
-      '(\$1.mimeType||\$1.mime_type||\"image/jpeg\")' \
-    ); \
-    if (patched !== orig) { fs.writeFileSync(f, patched); n++; console.log('Patched:', f); } \
-  } \
-  console.log('mimeType patch complete. Files patched:', n); \
-"
+# Surgical fix: openai-responses-shared.js (from @mariozechner/pi-ai) builds OpenAI
+# image URLs as data:${item.mimeType};base64,... but mimeType is undefined when MCP
+# ImageContent arrives, producing data:undefined;base64,... which OpenAI rejects (HTTP 400).
+# Patch the two known lines to fall back to "image/jpeg".
+RUN sed -i \
+    's/${item\.mimeType}/${item.mimeType || "image\/jpeg"}/g;s/${block\.mimeType}/${block.mimeType || "image\/jpeg"}/g' \
+    /usr/lib/node_modules/openclaw/node_modules/@mariozechner/pi-ai/dist/providers/openai-responses-shared.js
 
 # SKILL.md goes into openclaw skills registry so it gets discovered and loaded
 RUN mkdir -p /root/.openclaw/skills/community-robot
