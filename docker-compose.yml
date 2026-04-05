@@ -12,8 +12,8 @@ services:
     # NOTE: with host networking, port 18790 is directly on the host
     network_mode: host
     volumes:
-      # Persist agent workspace between restarts
-      - moretea-openclaw-data:/root/.openclaw/workspace
+      # Persist agent workspace between restarts (bind mount for easy host access)
+      - ./workspace:/root/.openclaw/workspace
       # Persist gateway identity and paired device state so browser/device tokens
       # do not drift every time the container is recreated.
       - moretea-openclaw-identity:/root/.openclaw/identity
@@ -21,8 +21,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  moretea-openclaw-data:
-    name: moretea-openclaw-data
   moretea-openclaw-identity:
     name: moretea-openclaw-identity
   moretea-openclaw-devices:

@@ -107,6 +107,7 @@
           "/root/robot"
         ],
         "provider": "ollama",
+        "model": "nomic-embed-text:latest",
         "remote": {
           "baseUrl": "http://127.0.0.1:11434/v1"
         },

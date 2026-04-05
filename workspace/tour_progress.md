@@ -1,0 +1,1 @@
+Tour: entrance > project_pods > display_cabinet > lounge > top_10_office > electronics_workstation > workshop_area > fabrication_and_machines_lab | Next: entrance | Status: starting

@@ -1,32 +1,50 @@
-# Garage@EEE — Knowledge Base Index
+# Garage@EEE — General Information and Culture
 
-## About
-Garage@EEE is a student-led makerspace in the School of Electrical and Electronic Engineering at NTU.
-It supports students through funding, equipment, and facilities to develop ideas and entrepreneurial skills.
+Keywords: Garage culture community newcomers getting started Telegram GARAGE101 toolbox forms links general information NTU EEE student makerspace
 
-## How to Use This Knowledge Base
+This file covers general information about Garage@EEE that does not fit neatly into a single topic — culture, how things work day to day, how to access resources, and what visitors and newcomers should know.
 
-When a visitor asks a question, load the relevant file BEFORE answering:
+---
 
-| Topic | File to Load | Example Questions |
-|---|---|---|
-| What is Garage, objectives, tracks | `~/robot/about.md` | "What is Garage@EEE?", "How do I join?" |
-| Facilities, equipment, tools | `~/robot/facilities.md` | "Do you have a 3D printer?", "What tools are available?" |
-| Where to find a specific item or component | `~/robot/inventory.md` | "Where is the multimeter?", "Where can I find resistors?", "Where are the safety goggles?" |
-| Events and competitions | `~/robot/events.md` | "What events do you run?", "What is STARTathon?" |
-| Projects and teams | `~/robot/projects.md` | "What projects are ongoing?", "How do I join a project?" |
-| Programmes (Tinkering/Innotrack/Launchpad) | `~/robot/programmes.md` | "What is Innotrack?", "How do I get funding?" |
-| Ambassador roles | `~/robot/ambassadors.md` | "What does the ambassador do?", "What portfolios are there?" |
+## The Garage@EEE Toolbox
 
-## Quick Facts
-- Location: School of EEE, NTU
-- Tracks: Ambassador Track, Innovator Track (Tinkering Projects, Innotrack, Launchpad)
-- Funding available: Up to $200 (Tinkering), Up to $999 (Innotrack)
-- Open to: NTU EEE students (at least one per team)
+All member-facing forms and booking tools are collected in the Garage@EEE Toolbox linktree. This is the single place to find everything — booking forms, loan forms, print requests, and more.
 
-## Garage@EEE Toolbox
-All member-facing forms and tools are in the Garage@EEE toolbox linktree. Tell visitors to open the Garage@EEE family groupchat on Telegram and look in the GARAGE101 topic to find it.
+To access the Toolbox: open the Garage@EEE family Telegram group and look in the GARAGE101 topic. The link is pinned there.
 
-Additional forms available there:
-- Garage tour request: Groups or external visitors who want a guided tour of the space can submit a request through this form.
-- Sports and games loan (Garage@EEE Connect): Members can borrow sports and games equipment through this form.
+Forms available in the Toolbox include seat booking, item loans, 3D print requests, filament submissions, laser cutter key sign-in/out, purchase approval, fault reporting, and more. See facilities.md for the full list.
+
+---
+
+## Garage Culture and Community
+
+Garage@EEE is a community, not just a space. Students here are encouraged to take initiative, try things, and learn by building. Mistakes are part of the process. The atmosphere is collaborative — members help each other, share tools and knowledge, and work on projects side by side.
+
+The team is divided into Ambassadors (who run the space and its programmes) and Innovators (who work on their own projects with Garage's support). Both groups use the same space and often collaborate.
+
+---
+
+## Getting Started at Garage
+
+For students who are new and want to get involved, the first step is to talk to someone at the front desk. They can explain the different ways to join — either as an Ambassador or as an Innovator — and help figure out which path fits best.
+
+Students who already have a project idea can apply to the Tinkering Projects programme as a starting point. Students who want to take on a leadership role can look at the Ambassador portfolios.
+
+There are no strict prerequisites. Garage welcomes students who are curious, motivated, and willing to put in the work.
+
+---
+
+## Location
+
+Garage@EEE is located in the School of Electrical and Electronic Engineering at NTU. Visitors and guests can ask More Tea or the team at the front for directions to specific areas within the space.
+
+---
+
+## Quick Reference
+
+- Membership tracks: Ambassador Track, Innovator Track
+- Innovator programmes: Tinkering Projects ($200 funding), Innotrack ($999), Launchpad ($999)
+- Ambassador portfolios: Welfare, Branding, Operations, Business Development, Startup Development, Training
+- Events: STARTathon, GEEEnius, Enitio, Innovation Festival, Escendo, IdeasJam, Makerspace Friendlies
+- Toolbox: Accessible via Garage@EEE family Telegram, GARAGE101 topic
+- For anything else: speak to the team at the front desk
