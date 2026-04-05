@@ -36,7 +36,7 @@ RUN node /tmp/patch-openai-responses.js && rm /tmp/patch-openai-responses.js
 
 # SKILL.md goes into openclaw skills registry so it gets discovered and loaded
 RUN mkdir -p /root/.openclaw/skills/community-robot
-COPY skills/SKILL.md /root/.openclaw/skills/community-robot/SKILL.md
+COPY garage_knowledge/SKILL.md /root/.openclaw/skills/community-robot/SKILL.md
 
 # Store canonical config at /root/config/ (outside the workspace volume).
 # The entrypoint copies SOUL.md and HEARTBEAT.md to the workspace on every start
