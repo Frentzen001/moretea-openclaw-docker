@@ -12,7 +12,9 @@ services:
     # NOTE: with host networking, port 18790 is directly on the host
     network_mode: host
     volumes:
-      # Persist agent workspace between restarts (bind mount for easy host access)
+      # Knowledge base — bind mount so edits take effect without rebuilding the image
+      - ./skills:/root/robot
+      # Agent workspace — bind mount for host visibility and git tracking
       - ./workspace:/root/.openclaw/workspace
       # Persist gateway identity and paired device state so browser/device tokens
       # do not drift every time the container is recreated.

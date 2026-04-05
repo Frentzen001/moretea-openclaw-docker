@@ -38,25 +38,18 @@ RUN node /tmp/patch-openai-responses.js && rm /tmp/patch-openai-responses.js
 RUN mkdir -p /root/.openclaw/skills/community-robot
 COPY skills/SKILL.md /root/.openclaw/skills/community-robot/SKILL.md
 
-# Store canonical config and initial memory seeds at /root/config/ (outside the workspace
-# volume). The entrypoint copies SOUL.md and HEARTBEAT.md to the workspace on every start
-# so that image rebuilds take effect immediately, and seeds corrections.md / experience.md
-# on first run only so that accumulated memories are preserved across container recreations.
+# Store canonical config at /root/config/ (outside the workspace volume).
+# The entrypoint copies SOUL.md and HEARTBEAT.md to the workspace on every start
+# so that image rebuilds take effect immediately.
 RUN mkdir -p /root/config
-COPY workspace-soul.md /root/config/SOUL.md
-COPY HEARTBEAT.md /root/config/HEARTBEAT.md
-COPY skills/experience.md /root/config/experience.md
-RUN touch /root/config/corrections.md
+COPY workspace/SOUL.md /root/config/SOUL.md
+COPY workspace/HEARTBEAT.md /root/config/HEARTBEAT.md
+RUN touch /root/config/corrections.md /root/config/experience.md
 
-# Knowledge base files go into ~/robot/ where SKILL.md tells the LLM to read from
-COPY skills/memory.md /root/robot/memory.md
-COPY skills/about.md /root/robot/about.md
-COPY skills/ambassadors.md /root/robot/ambassadors.md
-COPY skills/events.md /root/robot/events.md
-COPY skills/facilities.md /root/robot/facilities.md
-COPY skills/projects.md /root/robot/projects.md
-COPY skills/programmes.md /root/robot/programmes.md
-RUN touch /root/robot/log.md
+# Knowledge base files are served via bind mount (./skills:/root/robot) at runtime.
+# No COPY needed — the bind mount gives the container direct access to the host files,
+# so edits to skills/ take effect without rebuilding the image.
+RUN mkdir -p /root/robot
 
 # Install an entrypoint that seeds the workspace volume on first start.
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
