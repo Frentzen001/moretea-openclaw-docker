@@ -9,9 +9,8 @@ mkdir -p /root/.openclaw/workspace
 cp /root/config/SOUL.md      /root/.openclaw/workspace/SOUL.md
 cp /root/config/HEARTBEAT.md /root/.openclaw/workspace/HEARTBEAT.md
 
-# Seed dynamic memory files on first run only — preserve accumulated data on
+# Seed unified memory file on first run only — preserve accumulated data on
 # subsequent container recreations.
-[ -f /root/.openclaw/workspace/corrections.md ] || cp /root/config/corrections.md /root/.openclaw/workspace/corrections.md
-[ -f /root/.openclaw/workspace/experience.md  ] || cp /root/config/experience.md  /root/.openclaw/workspace/experience.md
+[ -f /root/.openclaw/workspace/MEMORY.md ] || cp /root/config/MEMORY.md /root/.openclaw/workspace/MEMORY.md
 
 exec "$@"

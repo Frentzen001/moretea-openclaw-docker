@@ -44,7 +44,7 @@ COPY garage_knowledge/SKILL.md /root/.openclaw/skills/community-robot/SKILL.md
 RUN mkdir -p /root/config
 COPY workspace/SOUL.md /root/config/SOUL.md
 COPY workspace/HEARTBEAT.md /root/config/HEARTBEAT.md
-RUN touch /root/config/corrections.md /root/config/experience.md
+RUN printf '# CORRECTIONS\n\n# EXPERIENCES\n\n# PEOPLE\n' > /root/config/MEMORY.md
 
 # Knowledge base files are served via bind mount (./skills:/root/robot) at runtime.
 # No COPY needed — the bind mount gives the container direct access to the host files,
