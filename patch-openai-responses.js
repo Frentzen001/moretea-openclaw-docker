@@ -1,11 +1,18 @@
 /**
- * Build-time patch for openai-responses-shared.js (@mariozechner/pi-ai).
+ * Build-time patch for openclaw image_url handling.
  *
- * Approach: inject a __mcpImageUrl() helper that handles every known layout of
- * a wrapped MCP ImageContent block, then replace the image_url template literals
- * with calls to that helper. This avoids brittle template-expression substitution.
+ * Patches two targets:
  *
- * Known layouts (depending on SDK version and code path):
+ * TARGET 1: openai-responses-shared.js (@mariozechner/pi-ai)
+ *   Injects __mcpImageUrl() helper and replaces template literals that construct
+ *   image_url from item/block fields.
+ *
+ * TARGET 2: bundled openclaw dist files (e.g. anthropic-vertex-stream-*.js)
+ *   Some bundled files have unpatched:
+ *     image_url: `data:${item.mimeType};base64,${item.data}`
+ *   which breaks with mcp-bridge Layout D where the item is stripped to {type, text}.
+ *
+ * Known image content layouts (depending on SDK version and code path):
  *   A. Anthropic SDK wrapped:  { type:"image", source:{type:"base64", data:"...", media_type:"..."} }
  *   B. Raw MCP:                { type:"image", data:"...", mimeType:"..." }
  *   C. URL form:               { type:"image", source:{type:"url", url:"data:image/jpeg;base64,..."} }
@@ -16,6 +23,11 @@
 
 'use strict';
 const fs = require('fs');
+const { execSync } = require('child_process');
+
+// =============================================================================
+// TARGET 1: openai-responses-shared.js
+// =============================================================================
 
 const TARGET =
   '/usr/lib/node_modules/openclaw/node_modules/@mariozechner/pi-ai/dist/providers/openai-responses-shared.js';
@@ -102,3 +114,63 @@ if (!itemChanged && !blockChanged) {
 }
 
 fs.writeFileSync(TARGET, code);
+
+// =============================================================================
+// TARGET 2: bundled openclaw dist files with bare item.mimeType template literals
+// =============================================================================
+// Pattern: image_url: `data:${item.mimeType};base64,${item.data}`
+// These appear in bundled files (e.g. anthropic-vertex-stream-*.js) and break with
+// mcp-bridge Layout D items that are stripped to {type, text}.
+// Fix: replace inline with a self-contained IIFE that handles all layouts.
+
+const DIST_DIR = '/usr/lib/node_modules/openclaw/dist';
+const INLINE_HELPER =
+  `(function(blk){` +
+  `var src=blk&&blk.source;` +
+  `if(src&&src.url)return src.url;` +
+  `var mime=(src&&src.media_type)||blk.mimeType;` +
+  `var raw=(src&&src.data!==undefined)?src.data:blk.data;` +
+  `if((raw==null||!mime)&&typeof blk.text==='string'){` +
+    `try{var p=JSON.parse(blk.text);var ps=p.source;` +
+    `raw=raw==null?((ps&&ps.data!==undefined)?ps.data:p.data):raw;` +
+    `if(!mime)mime=(ps&&ps.media_type)||p.mimeType;}` +
+    `catch(e){}` +
+  `}` +
+  `return'data:'+(mime||'image/jpeg')+';base64,'+(raw||'');` +
+  `})(item)`;
+
+let distFiles = [];
+try {
+  const result = execSync(
+    `grep -rl 'image_url' ${DIST_DIR} 2>/dev/null`,
+    { encoding: 'utf8' }
+  ).trim();
+  distFiles = result
+    ? result.split('\n').filter(f => f.endsWith('.js') && !f.endsWith('.map'))
+    : [];
+} catch (e) {
+  distFiles = [];
+}
+
+const BARE_PATTERN = /image_url:\s*`data:\$\{item\.mimeType\};base64,\$\{item\.data\}`/g;
+let distPatched = 0;
+
+for (const file of distFiles) {
+  let src;
+  try { src = fs.readFileSync(file, 'utf8'); } catch (e) { continue; }
+  if (!BARE_PATTERN.test(src)) { BARE_PATTERN.lastIndex = 0; continue; }
+  BARE_PATTERN.lastIndex = 0;
+  const patched = src.replace(BARE_PATTERN, `image_url: ${INLINE_HELPER}`);
+  if (patched !== src) {
+    fs.writeFileSync(file, patched);
+    const short = file.replace(DIST_DIR + '/', '');
+    console.log(`Patched bare item.mimeType template in dist/${short}`);
+    distPatched++;
+  }
+}
+
+if (distPatched === 0) {
+  console.log('No bare item.mimeType image_url templates found in dist/ (already patched or not present).');
+} else {
+  console.log(`Patched ${distPatched} dist file(s) for mcp-bridge Layout D image support.`);
+}
