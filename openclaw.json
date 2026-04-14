@@ -19,6 +19,7 @@
           {
             "id": "gpt-4.1-mini",
             "name": "gpt-4.1-mini",
+            "api": "openai-responses",
             "reasoning": false,
             "input": ["text", "image"],
             "contextWindow": 1000000
@@ -32,6 +33,7 @@
       "read",
       "write",
       "process",
+      "sessions_spawn",
       "moretea_robot_health",
       "moretea_robot_express_emotion",
       "moretea_robot_capture_image",
@@ -39,12 +41,10 @@
       "moretea_robot_register_face",
       "moretea_robot_get_navigation_status",
       "moretea_robot_list_tour_stops",
-      "moretea_robot_start_navigation_to_stop",
-      "moretea_robot_wait_for_navigation_action",
-      "moretea_robot_get_navigation_action_status",
+      "moretea_robot_navigate_to_stop",
       "moretea_robot_cancel_navigation",
-      "moretea_robot_move",
       "moretea_robot_move_distance",
+      "moretea_robot_rotate_angle",
       "moretea_robot_stop_motion",
       "moretea_robot_get_odometry",
       "moretea_robot_get_battery",
@@ -71,7 +71,7 @@
         "openai/gpt-4.1-mini": {
           "params": {
             "temperature": 0.3,
-            "max_output_tokens": 500
+            "max_tokens": 500
           }
         }
       },
@@ -90,6 +90,23 @@
         "mode": "cache-ttl",
         "ttl": "15m",
         "keepLastAssistants": 2
+      },
+      "subagents": {
+        "model": "openai/gpt-4.1-mini",
+        "runTimeoutSeconds": 360,
+        "maxSpawnDepth": 2,
+        "maxChildrenPerAgent": 3,
+        "maxConcurrent": 3,
+        "tools": {
+          "allow": [
+            "moretea_robot_navigate_to_stop",
+            "moretea_robot_cancel_navigation",
+            "moretea_robot_move_distance",
+            "moretea_robot_rotate_angle",
+            "moretea_robot_stop_motion",
+            "sessions_send"
+          ]
+        }
       },
       "heartbeat": {
         "every": "5m",
