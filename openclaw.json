@@ -60,6 +60,18 @@
       "fetch": {
         "enabled": false
       }
+    },
+    "subagents": {
+      "tools": {
+        "allow": [
+          "moretea_robot_navigate_to_stop",
+          "moretea_robot_cancel_navigation",
+          "moretea_robot_move_distance",
+          "moretea_robot_rotate_angle",
+          "moretea_robot_stop_motion",
+          "sessions_send"
+        ]
+      }
     }
   },
   "agents": {
@@ -96,17 +108,7 @@
         "runTimeoutSeconds": 360,
         "maxSpawnDepth": 2,
         "maxChildrenPerAgent": 3,
-        "maxConcurrent": 3,
-        "tools": {
-          "allow": [
-            "moretea_robot_navigate_to_stop",
-            "moretea_robot_cancel_navigation",
-            "moretea_robot_move_distance",
-            "moretea_robot_rotate_angle",
-            "moretea_robot_stop_motion",
-            "sessions_send"
-          ]
-        }
+        "maxConcurrent": 3
       },
       "heartbeat": {
         "every": "5m",

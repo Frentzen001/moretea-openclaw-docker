@@ -24,8 +24,14 @@ COPY openclaw.json /root/.openclaw/openclaw.json
 # Copy API key auth profiles
 COPY auth-profiles.json /root/.openclaw/agents/main/agent/auth-profiles.json
 
-# Install the MCP bridge used by the direct robot runtime
-RUN openclaw plugins install @aiwerk/openclaw-mcp-bridge
+# Install the MCP bridge used by the direct robot runtime.
+# Install from a local npm-packed tarball so the build does not depend on
+# ClawHub's resolver path, which can rate limit bare package installs.
+RUN tmpdir="$(mktemp -d)" \
+    && cd "$tmpdir" \
+    && npm pack @aiwerk/openclaw-mcp-bridge \
+    && openclaw plugins install ./*.tgz \
+    && rm -rf "$tmpdir"
 
 # Patch openai-responses-shared.js to handle image content from all sources:
 # - Anthropic SDK wrapped: { source: { type:"base64", data:"...", media_type:"..." } }

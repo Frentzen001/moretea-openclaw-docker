@@ -5,7 +5,7 @@ Refer visitors to the zone name, not shelf codes.
 
 ---
 
-## Heavy Machines Room
+## Fabrication Room
 
 Tools and equipment for making and electronics work.
 
@@ -14,10 +14,6 @@ Tools and equipment for making and electronics work.
 **Hand tools:** Screwdrivers, pliers, wire cutters, wire strippers, hammers, large set squares, magnifying glass.
 
 **Fabrication:** Acrylic bender, heat gun, drilling equipment and tool heads, painting equipment.
-
-**Soldering and rework (backup):** Backup soldering stations, rework stations, soldering consumables. Primary units are in the Electronics Workbench.
-
-**Electronics workbench (backup):** Backup multimeters, oscilloscopes, waveform generators, DC power supplies. Primary units are in the Electronics Workbench.
 
 **Components and consumables:** Jumper wires, jumper cables, LED strips, LED (green superbright), USB-A connectors, assorted electronic components, natural gas sensor, sandpaper, glue guns, fabric, PCBs, batteries, electromagnet.
 
@@ -37,7 +33,7 @@ The main area for electronics work and soldering.
 
 ---
 
-## 3D Printing Room
+## Machines Room
 
 Everything related to 3D printing, resin printing, and associated equipment.
 

@@ -13,7 +13,7 @@ The 3D printers can turn digital designs into physical prototypes and models. To
 The laser cutter can engrave and cut materials like wood and acrylic, and is ideal for custom signage, enclosures, or intricate shapes. Members need to sign the laser cutter key in and out when using it. The key check in/out form is in the Toolbox.
 
 The PCB milling machine lets you prototype and produce circuit board designs quickly without waiting for external fabrication. It is useful for one-off or low-volume PCB work.
-
+	
 For general making and woodwork, Garage has a fully equipped workbench with drills, saw clamps, and a variety of hand tools. The drill press handles precision drilling through wood and plastic. The acrylic bender lets you curve acrylic sheets to make enclosures and display stands. A heat gun is also available for heat-forming and shrink-wrapping.
 
 ---
@@ -22,7 +22,7 @@ Electronics Equipment
 
 The electronics workstation is the primary area for circuit work and testing. It has soldering stations for all skill levels, from complete beginners to experienced makers. There are also rework stations for desoldering and fine component work.
 
-Test equipment includes oscilloscopes, waveform generators, DC power supplies, multimeters, and breadboards for prototyping. Backup units for most of this equipment are located in the Heavy Machines Room.
+Test equipment includes oscilloscopes, waveform generators, DC power supplies, multimeters, and breadboards for prototyping. Backup units for most of this equipment are located in the electronics workbench.
 
 ---
 
