@@ -57,9 +57,8 @@ function __mcpImageUrl(blk) {
     } catch (e) {}
   }
   if (raw == null) {
-    // Log the full block so we can see the real structure in docker logs
-    console.error('[MCP-IMAGE] image data missing. block keys:', Object.keys(blk || {}),
-      '| source:', JSON.stringify(src || null));
+    // Log the full block JSON so we can see the exact layout in docker logs
+    console.error('[MCP-IMAGE] image data missing. Full block:', JSON.stringify(blk || null));
     return 'data:' + mime + ';base64,MISSING_IMAGE_DATA';
   }
   var b64 = typeof raw === 'string' ? raw : Buffer.from(raw).toString('base64');
@@ -152,7 +151,9 @@ try {
   distFiles = [];
 }
 
-const BARE_PATTERN = /image_url:\s*`data:\$\{item\.mimeType\};base64,\$\{item\.data\}`/g;
+// Matches image_url: `data:${<anyVar>.mimeType};base64,${<sameVar>.data}` with any variable name.
+// Capture group 1 is the variable name so the replacement can reference the same variable.
+const BARE_PATTERN = /image_url:\s*`data:\$\{(\w+)\.mimeType\};base64,\$\{\1\.data\}`/g;
 let distPatched = 0;
 
 for (const file of distFiles) {
@@ -160,7 +161,10 @@ for (const file of distFiles) {
   try { src = fs.readFileSync(file, 'utf8'); } catch (e) { continue; }
   if (!BARE_PATTERN.test(src)) { BARE_PATTERN.lastIndex = 0; continue; }
   BARE_PATTERN.lastIndex = 0;
-  const patched = src.replace(BARE_PATTERN, `image_url: ${INLINE_HELPER}`);
+  // Replace using the captured variable name so the IIFE receives the correct object.
+  const patched = src.replace(BARE_PATTERN, (_, varName) =>
+    'image_url: ' + INLINE_HELPER.replace(/\(item\)$/, '(' + varName + ')')
+  );
   if (patched !== src) {
     fs.writeFileSync(file, patched);
     const short = file.replace(DIST_DIR + '/', '');

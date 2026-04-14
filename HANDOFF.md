@@ -14,19 +14,26 @@ The canonical runtime flow is:
 3. Start OpenClaw in this container. The `openclaw-mcp-bridge` plugin connects directly to `http://127.0.0.1:8765/mcp`.
 4. The bridge registers prefixed tools as `moretea_robot_*`.
 
-### mimeType patch (2026-04-04)
+### mimeType patch (updated 2026-04-14)
 
-OpenClaw's `contentToOpenAIParts()` function builds OpenAI image data URLs as
-`data:<mimeType>;base64,<data>` but fails to read the `mimeType` field from MCP
-`ImageContent`, producing `data:undefined;base64,...` which OpenAI rejects with
-HTTP 400.
+The `@aiwerk/openclaw-mcp-bridge` plugin strips all MCP content fields to `{type, text}` only
+(Layout D), putting `JSON.stringify(originalItem)` into `text`. openclaw's `openai-responses`
+code path then tries to build `image_url: \`data:${item.mimeType};base64,${item.data}\``,
+which produces `data:undefined;base64,undefined` because `mimeType` and `data` are stripped.
 
-The Dockerfile runs a Node.js patch after plugin installation that rewrites every
-`.mimeType` property access in both the `openclaw` and `@aiwerk` npm packages to
-`(.mimeType||.mime_type||"image/jpeg")`, covering both the core package and the
-bridge plugin regardless of which code path is active.
+`patch-openai-responses.js` (run at Docker build time) applies two fixes:
 
-**Rebuild required** after this change: `docker compose build --no-cache && docker compose up -d`
+**TARGET 1** — `openai-responses-shared.js` (@mariozechner/pi-ai): injects a `__mcpImageUrl()`
+helper that handles all layouts (A–D) and replaces the broken template literal with a call to it.
+Layout D is handled by parsing `blk.text` as JSON to recover the original image data.
+
+**TARGET 2** — bundled `openclaw/dist/` files: replaces bare `image_url: \`data:${<var>.mimeType};base64,${<var>.data}\``
+templates (any variable name) with the same multi-layout IIFE helper.
+
+When `__mcpImageUrl` cannot find image data, it logs the full block JSON:
+`[MCP-IMAGE] image data missing. Full block: {...}` — check `docker logs moretea-openclaw`.
+
+**Rebuild required** after any change to this patch: `docker compose build --no-cache && docker compose up -d`
 
 The local `plugin/` directory is retained only as legacy/reference code. It is not part of the default runtime or build path.
 
